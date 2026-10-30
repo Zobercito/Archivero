@@ -1,58 +1,23 @@
 import { useQuery } from '@tanstack/react-query';
-import {
-  Folder,
-  FolderOpen,
-  History,
-  LogOut,
-  Menu,
-  Trash2,
-  Users,
-  X,
-} from 'lucide-react';
+import { Folder, FolderOpen, History, LogOut, Menu, Trash2, Users, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import {
-  NavLink,
-  Outlet,
-  useLocation,
-  useNavigate,
-} from 'react-router-dom';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/auth';
 import { useI18n } from '../i18n';
 import { api, unwrap } from '../lib/api';
+import { buildFolderTree, type FolderNode } from '../lib/folders';
 import { initials, isAdmin, isEditor } from '../lib/format';
-import type { FolderTreeNode } from '../lib/types';
 import { LanguageToggle } from './LanguageToggle';
 import { Logo } from './Logo';
 import { RoleBadge } from './RoleBadge';
-import { IconButton, Spinner, cn } from './ui';
-
-type TreeNode = FolderTreeNode & { children: TreeNode[] };
-
-function buildTree(folders: FolderTreeNode[]): TreeNode[] {
-  const nodes = new Map<string, TreeNode>();
-  for (const folder of folders) {
-    nodes.set(folder.id, { ...folder, children: [] });
-  }
-  const roots: TreeNode[] = [];
-  for (const node of nodes.values()) {
-    const parent = node.parentId ? nodes.get(node.parentId) : undefined;
-    if (parent) parent.children.push(node);
-    else roots.push(node);
-  }
-  const sort = (list: TreeNode[]) => {
-    list.sort((a, b) => a.name.localeCompare(b.name, 'es', { sensitivity: 'base' }));
-    for (const item of list) sort(item.children);
-  };
-  sort(roots);
-  return roots;
-}
+import { cn, IconButton, Spinner } from './ui';
 
 function FolderBranch({
   nodes,
   depth,
   onNavigate,
 }: {
-  nodes: TreeNode[];
+  nodes: FolderNode[];
   depth: number;
   onNavigate: () => void;
 }) {
@@ -72,18 +37,12 @@ function FolderBranch({
             <span className="truncate">{node.name}</span>
           </NavLink>
           {node.children.length > 0 && (
-            <FolderBranch
-              nodes={node.children}
-              depth={depth + 1}
-              onNavigate={onNavigate}
-            />
+            <FolderBranch nodes={node.children} depth={depth + 1} onNavigate={onNavigate} />
           )}
         </li>
       ))}
       {nodes.length === 0 && depth === 0 ? (
-        <li className="px-3 py-2 text-xs italic text-ink-faint">
-          {t('shell.noFolders')}
-        </li>
+        <li className="px-3 py-2 text-xs italic text-ink-faint">{t('shell.noFolders')}</li>
       ) : null}
     </ul>
   );
@@ -105,8 +64,9 @@ export function AppShell() {
     },
   });
 
-  const tree = useMemo(() => buildTree(treeQuery.data ?? []), [treeQuery.data]);
+  const tree = useMemo(() => buildFolderTree(treeQuery.data ?? []), [treeQuery.data]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: close the drawer whenever the route changes
   useEffect(() => {
     setMenuOpen(false);
   }, [location.pathname]);
@@ -195,11 +155,7 @@ export function AppShell() {
               <p className="display text-xl leading-none">Archivero</p>
             </div>
           </div>
-          <IconButton
-            label={t('shell.closeMenu')}
-            onClick={closeMenu}
-            className="lg:hidden"
-          >
+          <IconButton label={t('shell.closeMenu')} onClick={closeMenu} className="lg:hidden">
             <X className="size-4" />
           </IconButton>
         </div>
@@ -222,9 +178,7 @@ export function AppShell() {
 
         <div className="flex min-h-0 flex-1 flex-col px-3 py-4">
           <div className="mb-2 flex items-center justify-between px-3">
-            <p className="eyebrow text-[0.58rem] text-ink-faint">
-              {t('shell.folders')}
-            </p>
+            <p className="eyebrow text-[0.58rem] text-ink-faint">{t('shell.folders')}</p>
             {treeQuery.isLoading && <Spinner className="size-3 text-ink-faint" />}
           </div>
           <div className="thin-scroll min-h-0 flex-1 overflow-y-auto pb-2">
@@ -249,11 +203,7 @@ export function AppShell() {
                 <RoleBadge role={user.role} />
               </div>
             </div>
-            <IconButton
-              label={t('shell.logout')}
-              onClick={handleLogout}
-              disabled={leaving}
-            >
+            <IconButton label={t('shell.logout')} onClick={handleLogout} disabled={leaving}>
               {leaving ? <Spinner /> : <LogOut className="size-4" />}
             </IconButton>
           </div>

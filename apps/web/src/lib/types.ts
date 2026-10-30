@@ -1,5 +1,5 @@
 import type { InferResponseType } from 'hono/client';
-import { api } from './api';
+import type { api } from './api';
 
 type Api = typeof api.api;
 type FilesClient = Api['files'];
@@ -23,14 +23,8 @@ export type ShareLinkItem = InferResponseType<
   FileDetailClient['share-links']['$get'],
   200
 >['links'][number];
-export type ShareCreated = InferResponseType<
-  FileDetailClient['share-links']['$post'],
-  201
->;
-export type PublicShare = InferResponseType<
-  PublicSharesClient[':token']['$get'],
-  200
->['share'];
+export type ShareCreated = InferResponseType<FileDetailClient['share-links']['$post'], 201>;
+export type PublicShare = InferResponseType<PublicSharesClient[':token']['$get'], 200>['share'];
 export type PublicDownload = InferResponseType<
   PublicSharesClient[':token']['download']['$post'],
   200

@@ -1,11 +1,11 @@
 import { Eye, EyeOff, KeyRound, Mail } from 'lucide-react';
-import { useState, type FormEvent } from 'react';
+import { type FormEvent, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { LanguageToggle } from '../components/LanguageToggle';
 import { Logo } from '../components/Logo';
 import { Button, Field, Input } from '../components/ui';
 import { useAuth } from '../context/auth';
-import { useI18n, type TranslationKey } from '../i18n';
+import { type TranslationKey, useI18n } from '../i18n';
 import { errorText } from '../lib/errors';
 
 const DEMO_EMAIL = 'sofia@archivero.demo';
@@ -165,9 +165,7 @@ export function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword((current) => !current)}
-                  aria-label={t(
-                    showPassword ? 'login.hidePassword' : 'login.showPassword',
-                  )}
+                  aria-label={t(showPassword ? 'login.hidePassword' : 'login.showPassword')}
                   className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-ink-faint transition hover:text-ink"
                 >
                   {showPassword ? (
@@ -188,11 +186,7 @@ export function LoginPage() {
               </div>
             )}
 
-            <Button
-              type="submit"
-              loading={busy}
-              className="w-full uppercase tracking-[0.16em]"
-            >
+            <Button type="submit" loading={busy} className="w-full uppercase tracking-[0.16em]">
               {busy ? t('login.submitting') : t('login.submit')}
             </Button>
           </form>
@@ -203,9 +197,7 @@ export function LoginPage() {
                 <p className="text-[0.62rem] font-bold uppercase tracking-[0.2em] text-terracotta">
                   {t('login.demoTitle')}
                 </p>
-                <p className="mt-1 text-xs leading-relaxed text-ink-soft">
-                  {t('login.demoBody')}
-                </p>
+                <p className="mt-1 text-xs leading-relaxed text-ink-soft">{t('login.demoBody')}</p>
               </div>
               <span className="stamp shrink-0 px-2 py-1 text-[0.5rem]">
                 {t('shell.role.viewer')}

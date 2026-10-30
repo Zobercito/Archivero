@@ -6,12 +6,7 @@ export class HttpError extends Error {
   readonly code: string;
   readonly details?: unknown;
 
-  constructor(
-    status: ContentfulStatusCode,
-    code: string,
-    message: string,
-    details?: unknown,
-  ) {
+  constructor(status: ContentfulStatusCode, code: string, message: string, details?: unknown) {
     super(message);
     this.name = 'HttpError';
     this.status = status;
@@ -32,11 +27,9 @@ export function errorPayload(code: string, message: string, details?: unknown) {
 
 export function validationHook(result: any, c: Context) {
   if (result.success) return;
-  const details = result.error?.issues?.map(
-    (issue: { path: PropertyKey[]; message: string }) => ({
-      path: issue.path.join('.'),
-      message: issue.message,
-    }),
-  );
+  const details = result.error?.issues?.map((issue: { path: PropertyKey[]; message: string }) => ({
+    path: issue.path.join('.'),
+    message: issue.message,
+  }));
   return c.json(errorPayload('VALIDATION_ERROR', 'Datos inválidos.', details), 400);
 }

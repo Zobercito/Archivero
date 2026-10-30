@@ -9,13 +9,9 @@ import { logActivity } from '../lib/activity';
 import { HttpError, validationHook } from '../lib/http';
 import { verifyPassword } from '../lib/password';
 import { rateLimit } from '../lib/rate-limit';
-import {
-  clearSessionCookie,
-  createSessionToken,
-  setSessionCookie,
-} from '../lib/session';
+import { clearSessionCookie, createSessionToken, setSessionCookie } from '../lib/session';
 import { emailSchema } from '../lib/validation';
-import { requireAuth, type AppEnv } from '../middleware/auth';
+import { type AppEnv, requireAuth } from '../middleware/auth';
 
 const loginSchema = z.object({
   email: emailSchema,
@@ -30,22 +26,12 @@ export const authRoutes = new Hono<AppEnv>()
     async (c) => {
       const { email, password } = c.req.valid('json');
 
-      const [user] = await db
-        .select()
-        .from(users)
-        .where(eq(users.email, email))
-        .limit(1);
+      const [user] = await db.select().from(users).where(eq(users.email, email)).limit(1);
 
-      const passwordOk = user
-        ? await verifyPassword(user.passwordHash, password)
-        : false;
+      const passwordOk = user ? await verifyPassword(user.passwordHash, password) : false;
 
       if (!user || user.disabledAt || !passwordOk) {
-        throw new HttpError(
-          401,
-          'INVALID_CREDENTIALS',
-          'Correo o contraseña incorrectos.',
-        );
+        throw new HttpError(401, 'INVALID_CREDENTIALS', 'Correo o contraseña incorrectos.');
       }
 
       const token = await createSessionToken(user.id);

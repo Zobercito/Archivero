@@ -8,7 +8,7 @@ import { folderDto } from '../dto';
 import { logActivity } from '../lib/activity';
 import { HttpError, validationHook } from '../lib/http';
 import { folderNameSchema, uuidSchema } from '../lib/validation';
-import { requireAuth, requireRole, type AppEnv } from '../middleware/auth';
+import { type AppEnv, requireAuth, requireRole } from '../middleware/auth';
 
 const listQuerySchema = z.object({
   parentId: uuidSchema.optional(),
@@ -47,11 +47,7 @@ async function assertParentIsValid(parentId: string | null | undefined, movingId
     let cursor: string | null = parent.id;
     while (cursor) {
       if (cursor === movingId) {
-        throw new HttpError(
-          400,
-          'INVALID_MOVE',
-          'No puedes mover una carpeta dentro de sí misma.',
-        );
+        throw new HttpError(400, 'INVALID_MOVE', 'No puedes mover una carpeta dentro de sí misma.');
       }
       const [row] = await db
         .select({ parentId: folders.parentId })
@@ -65,39 +61,33 @@ async function assertParentIsValid(parentId: string | null | undefined, movingId
 
 export const foldersRoutes = new Hono<AppEnv>()
   .use('*', requireAuth)
-  .get(
-    '/',
-    zValidator('query', listQuerySchema, validationHook),
-    async (c) => {
-      const { parentId } = c.req.valid('query');
+  .get('/', zValidator('query', listQuerySchema, validationHook), async (c) => {
+    const { parentId } = c.req.valid('query');
 
-      const rows = await db
-        .select({ folder: folders, ownerName: users.name })
-        .from(folders)
-        .leftJoin(users, eq(folders.ownerId, users.id))
-        .where(
-          and(
-            isNull(folders.deletedAt),
-            parentId ? eq(folders.parentId, parentId) : isNull(folders.parentId),
-          ),
-        )
-        .orderBy(asc(sql`lower(${folders.name})`));
+    const rows = await db
+      .select({ folder: folders, ownerName: users.name })
+      .from(folders)
+      .leftJoin(users, eq(folders.ownerId, users.id))
+      .where(
+        and(
+          isNull(folders.deletedAt),
+          parentId ? eq(folders.parentId, parentId) : isNull(folders.parentId),
+        ),
+      )
+      .orderBy(asc(sql`lower(${folders.name})`));
 
-      return c.json(
-        {
-          folders: rows.map((row) =>
-            folderDto(
-              row.folder,
-              row.ownerName
-                ? { id: row.folder.ownerId, name: row.ownerName }
-                : null,
-            ),
+    return c.json(
+      {
+        folders: rows.map((row) =>
+          folderDto(
+            row.folder,
+            row.ownerName ? { id: row.folder.ownerId, name: row.ownerName } : null,
           ),
-        },
-        200,
-      );
-    },
-  )
+        ),
+      },
+      200,
+    );
+  })
   .get('/tree', async (c) => {
     const rows = await db
       .select({
@@ -139,10 +129,7 @@ export const foldersRoutes = new Hono<AppEnv>()
         metadata: { name: created.name },
       });
 
-      return c.json(
-        { folder: folderDto(created, { id: user.id, name: user.name }) },
-        201,
-      );
+      return c.json({ folder: folderDto(created, { id: user.id, name: user.name }) }, 201);
     },
   )
   .patch(

@@ -1,13 +1,13 @@
 import { Loader2, MoreHorizontal, X } from 'lucide-react';
 import {
-  useEffect,
-  useId,
-  useRef,
-  useState,
   type ButtonHTMLAttributes,
   type InputHTMLAttributes,
   type ReactNode,
   type SelectHTMLAttributes,
+  useEffect,
+  useId,
+  useRef,
+  useState,
 } from 'react';
 import { createPortal } from 'react-dom';
 import { useI18n } from '../i18n';
@@ -24,10 +24,8 @@ type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 type ButtonSize = 'sm' | 'md';
 
 const buttonVariants: Record<ButtonVariant, string> = {
-  primary:
-    'border-ink bg-ink text-paper hover:border-terracotta-dark hover:bg-terracotta-dark',
-  secondary:
-    'border-rule bg-paper-light text-ink hover:border-rule-strong hover:bg-paper-deep/60',
+  primary: 'border-ink bg-ink text-paper hover:border-terracotta-dark hover:bg-terracotta-dark',
+  secondary: 'border-rule bg-paper-light text-ink hover:border-rule-strong hover:bg-paper-deep/60',
   ghost:
     'border-transparent bg-transparent text-ink-soft hover:border-rule hover:bg-paper-light hover:text-ink',
   danger:
@@ -97,11 +95,7 @@ export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElem
   return <input className={cn('field-input', className)} {...props} />;
 }
 
-export function Select({
-  className,
-  children,
-  ...props
-}: SelectHTMLAttributes<HTMLSelectElement>) {
+export function Select({ className, children, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <select className={cn('field-input', className)} {...props}>
       {children}
@@ -182,6 +176,7 @@ export function Modal({
   if (!open) return null;
 
   return createPortal(
+    // biome-ignore lint/a11y/noStaticElementInteractions: backdrop click closes the modal
     <div
       className="fixed inset-0 z-[100] flex items-end justify-center overflow-y-auto bg-ink/45 px-0 py-0 backdrop-blur-[2px] sm:items-center sm:px-6 sm:py-8"
       onMouseDown={(event) => {
@@ -286,11 +281,7 @@ export function ActionMenu({
   }, [open]);
 
   return (
-    <div
-      className="relative"
-      ref={ref}
-      onClick={(event) => event.stopPropagation()}
-    >
+    <div className="relative" ref={ref}>
       <IconButton
         label={label}
         aria-haspopup="menu"

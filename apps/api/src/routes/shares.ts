@@ -3,7 +3,7 @@ import { and, desc, eq, isNull, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { db } from '../db';
-import { fileVersions, files, shareLinks, users } from '../db/schema';
+import { files, fileVersions, shareLinks, users } from '../db/schema';
 import { shareLinkDto } from '../dto';
 import { env } from '../env';
 import { logActivity } from '../lib/activity';
@@ -16,7 +16,7 @@ import {
   signDownloadUrl,
 } from '../lib/storage';
 import { uuidSchema } from '../lib/validation';
-import { requireAuth, requireRole, type AppEnv } from '../middleware/auth';
+import { type AppEnv, requireAuth, requireRole } from '../middleware/auth';
 
 const createShareSchema = z
   .object({
@@ -64,17 +64,10 @@ function shareIsUsable(row: ShareWithFile) {
   const now = Date.now();
   if (row.link.revokedAt) return false;
   if (row.link.expiresAt && row.link.expiresAt.getTime() <= now) return false;
-  if (
-    row.link.maxDownloads !== null &&
-    row.link.downloadCount >= row.link.maxDownloads
-  ) {
+  if (row.link.maxDownloads !== null && row.link.downloadCount >= row.link.maxDownloads) {
     return false;
   }
-  return (
-    row.file.deletedAt === null &&
-    row.file.status === 'ready' &&
-    row.version !== null
-  );
+  return row.file.deletedAt === null && row.file.status === 'ready' && row.version !== null;
 }
 
 function publicBaseUrl() {
@@ -83,50 +76,39 @@ function publicBaseUrl() {
 
 const publicShares = new Hono<AppEnv>()
   .use('*', rateLimit({ name: 'public-share', limit: 120, windowMs: 60_000 }))
-  .get(
-    '/:token',
-    zValidator('param', tokenParamSchema, validationHook),
-    async (c) => {
-      const { token } = c.req.valid('param');
-      const row = await findShareByToken(token);
+  .get('/:token', zValidator('param', tokenParamSchema, validationHook), async (c) => {
+    const { token } = c.req.valid('param');
+    const row = await findShareByToken(token);
 
-      if (!row || !shareIsUsable(row) || !row.version) {
-        throw new HttpError(
-          404,
-          'SHARE_UNAVAILABLE',
-          'Este enlace no está disponible.',
-        );
-      }
+    if (!row || !shareIsUsable(row) || !row.version) {
+      throw new HttpError(404, 'SHARE_UNAVAILABLE', 'Este enlace no está disponible.');
+    }
 
-      return c.json(
-        {
-          share: {
-            fileName: row.file.name,
-            mimeType: row.version.mimeType,
-            size: row.version.size,
-            versionNumber: row.version.versionNumber,
-            sharedAt: row.link.createdAt.toISOString(),
-            expiresAt: row.link.expiresAt?.toISOString() ?? null,
-            maxDownloads: row.link.maxDownloads,
-            downloadCount: row.link.downloadCount,
-            remainingDownloads:
-              row.link.maxDownloads === null
-                ? null
-                : Math.max(0, row.link.maxDownloads - row.link.downloadCount),
-          },
+    return c.json(
+      {
+        share: {
+          fileName: row.file.name,
+          mimeType: row.version.mimeType,
+          size: row.version.size,
+          versionNumber: row.version.versionNumber,
+          sharedAt: row.link.createdAt.toISOString(),
+          expiresAt: row.link.expiresAt?.toISOString() ?? null,
+          maxDownloads: row.link.maxDownloads,
+          downloadCount: row.link.downloadCount,
+          remainingDownloads:
+            row.link.maxDownloads === null
+              ? null
+              : Math.max(0, row.link.maxDownloads - row.link.downloadCount),
         },
-        200,
-      );
-    },
-  )
-  .post(
-    '/:token/download',
-    zValidator('param', tokenParamSchema, validationHook),
-    async (c) => {
-      const { token } = c.req.valid('param');
-      const tokenHash = hashToken(token);
+      },
+      200,
+    );
+  })
+  .post('/:token/download', zValidator('param', tokenParamSchema, validationHook), async (c) => {
+    const { token } = c.req.valid('param');
+    const tokenHash = hashToken(token);
 
-      const result = await db.execute(sql`
+    const result = await db.execute(sql`
         UPDATE share_links
         SET download_count = download_count + 1
         WHERE token_hash = ${tokenHash}
@@ -142,71 +124,59 @@ const publicShares = new Hono<AppEnv>()
         RETURNING id, file_id, download_count, max_downloads
       `);
 
-      const updated = (
-        result as unknown as Array<{
-          id: string;
-          file_id: string;
-          download_count: number;
-          max_downloads: number | null;
-        }>
-      )[0];
+    const updated = (
+      result as unknown as Array<{
+        id: string;
+        file_id: string;
+        download_count: number;
+        max_downloads: number | null;
+      }>
+    )[0];
 
-      if (!updated) {
-        throw new HttpError(
-          404,
-          'SHARE_UNAVAILABLE',
-          'Este enlace no está disponible.',
-        );
-      }
+    if (!updated) {
+      throw new HttpError(404, 'SHARE_UNAVAILABLE', 'Este enlace no está disponible.');
+    }
 
-      const [row] = await db
-        .select({ file: files, version: fileVersions })
-        .from(files)
-        .innerJoin(fileVersions, eq(files.currentVersionId, fileVersions.id))
-        .where(and(eq(files.id, updated.file_id), isNull(files.deletedAt)))
-        .limit(1);
+    const [row] = await db
+      .select({ file: files, version: fileVersions })
+      .from(files)
+      .innerJoin(fileVersions, eq(files.currentVersionId, fileVersions.id))
+      .where(and(eq(files.id, updated.file_id), isNull(files.deletedAt)))
+      .limit(1);
 
-      if (!row) {
-        throw new HttpError(
-          404,
-          'SHARE_UNAVAILABLE',
-          'Este enlace no está disponible.',
-        );
-      }
+    if (!row) {
+      throw new HttpError(404, 'SHARE_UNAVAILABLE', 'Este enlace no está disponible.');
+    }
 
-      const url = await signDownloadUrl(row.version.storageKey, row.file.name);
+    const url = await signDownloadUrl(row.version.storageKey, row.file.name);
 
-      await logActivity({
-        userId: null,
-        action: 'share.download',
-        targetType: 'share',
-        targetId: updated.id,
-        metadata: {
-          fileName: row.file.name,
-          downloadCount: Number(updated.download_count),
-          maxDownloads: updated.max_downloads,
-        },
-      });
+    await logActivity({
+      userId: null,
+      action: 'share.download',
+      targetType: 'share',
+      targetId: updated.id,
+      metadata: {
+        fileName: row.file.name,
+        downloadCount: Number(updated.download_count),
+        maxDownloads: updated.max_downloads,
+      },
+    });
 
-      return c.json(
-        {
-          url,
-          fileName: row.file.name,
-          mimeType: row.version.mimeType,
-          size: row.version.size,
-          expiresIn: DOWNLOAD_URL_TTL_SECONDS,
-          remainingDownloads:
-            updated.max_downloads === null
-              ? null
-              : Math.max(
-                  0,
-                  Number(updated.max_downloads) - Number(updated.download_count),
-                ),
-        },
-        200,
-      );
-    },
-  );
+    return c.json(
+      {
+        url,
+        fileName: row.file.name,
+        mimeType: row.version.mimeType,
+        size: row.version.size,
+        expiresIn: DOWNLOAD_URL_TTL_SECONDS,
+        remainingDownloads:
+          updated.max_downloads === null
+            ? null
+            : Math.max(0, Number(updated.max_downloads) - Number(updated.download_count)),
+      },
+      200,
+    );
+  });
 
 export const sharesRoutes = new Hono<AppEnv>()
   .route('/public/shares', publicShares)
@@ -319,11 +289,7 @@ export const sharesRoutes = new Hono<AppEnv>()
       const user = c.get('user');
       const { id } = c.req.valid('param');
 
-      const [link] = await db
-        .select()
-        .from(shareLinks)
-        .where(eq(shareLinks.id, id))
-        .limit(1);
+      const [link] = await db.select().from(shareLinks).where(eq(shareLinks.id, id)).limit(1);
 
       if (!link) throw new HttpError(404, 'SHARE_NOT_FOUND', 'Enlace no encontrado.');
 

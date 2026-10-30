@@ -14,11 +14,14 @@ const server = serve(
   },
 );
 
-const cleanupTimer = setInterval(() => {
-  cleanupPendingUploads().catch((error) => {
-    console.error('Error al limpiar subidas pendientes:', error);
-  });
-}, 60 * 60 * 1000);
+const cleanupTimer = setInterval(
+  () => {
+    cleanupPendingUploads().catch((error) => {
+      console.error('Error al limpiar subidas pendientes:', error);
+    });
+  },
+  60 * 60 * 1000,
+);
 cleanupTimer.unref();
 
 function shutdown() {

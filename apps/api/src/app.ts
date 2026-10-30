@@ -1,8 +1,9 @@
-import { bodyLimit } from 'hono/body-limit';
 import { Hono } from 'hono';
+import { bodyLimit } from 'hono/body-limit';
 import { secureHeaders } from 'hono/secure-headers';
 import { env } from './env';
 import { errorPayload, HttpError } from './lib/http';
+import type { AppEnv } from './middleware/auth';
 import { activityRoutes } from './routes/activity';
 import { authRoutes } from './routes/auth';
 import { filesRoutes } from './routes/files';
@@ -11,7 +12,6 @@ import { maintenanceRoutes } from './routes/maintenance';
 import { sharesRoutes } from './routes/shares';
 import { trashRoutes } from './routes/trash';
 import { usersRoutes } from './routes/users';
-import type { AppEnv } from './middleware/auth';
 
 const writeMethods = new Set(['POST', 'PUT', 'PATCH', 'DELETE']);
 
@@ -55,16 +55,10 @@ export const app = new Hono<AppEnv>()
   .notFound((c) => c.json(errorPayload('NOT_FOUND', 'Ruta no encontrada.'), 404))
   .onError((error, c) => {
     if (error instanceof HttpError) {
-      return c.json(
-        errorPayload(error.code, error.message, error.details),
-        error.status,
-      );
+      return c.json(errorPayload(error.code, error.message, error.details), error.status);
     }
     console.error(error);
-    return c.json(
-      errorPayload('INTERNAL_ERROR', 'Ocurrió un error inesperado.'),
-      500,
-    );
+    return c.json(errorPayload('INTERNAL_ERROR', 'Ocurrió un error inesperado.'), 500);
   });
 
 export type AppType = typeof app;

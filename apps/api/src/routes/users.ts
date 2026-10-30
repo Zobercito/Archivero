@@ -15,7 +15,7 @@ import {
   roleSchema,
   uuidSchema,
 } from '../lib/validation';
-import { requireAuth, requireRole, type AppEnv } from '../middleware/auth';
+import { type AppEnv, requireAuth, requireRole } from '../middleware/auth';
 
 const createUserSchema = z.object({
   name: displayNameSchema,
@@ -104,20 +104,10 @@ export const usersRoutes = new Hono<AppEnv>()
         const remaining = await db
           .select({ id: users.id })
           .from(users)
-          .where(
-            and(
-              eq(users.role, 'admin'),
-              isNull(users.disabledAt),
-              ne(users.id, target.id),
-            ),
-          );
+          .where(and(eq(users.role, 'admin'), isNull(users.disabledAt), ne(users.id, target.id)));
 
         if (remaining.length === 0) {
-          throw new HttpError(
-            409,
-            'LAST_ADMIN',
-            'Debe quedar al menos un administrador activo.',
-          );
+          throw new HttpError(409, 'LAST_ADMIN', 'Debe quedar al menos un administrador activo.');
         }
       }
 

@@ -1,18 +1,18 @@
 import { createHash } from 'node:crypto';
 import { eq, sql } from 'drizzle-orm';
-import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { PNG } from 'pngjs';
-import { db, sql as connection } from './src/db';
-import { fileVersions, files, folders, shareLinks, users } from './src/db/schema';
+import { sql as connection, db } from './src/db';
+import { files, fileVersions, folders, shareLinks, users } from './src/db/schema';
 import { logActivity } from './src/lib/activity';
 import { hashPassword } from './src/lib/password';
 import {
   buildStorageKey,
+  deleteObjectPrefix,
   ensureBucket,
   generateShareToken,
   hashToken,
   putObject,
-  deleteObjectPrefix,
 } from './src/lib/storage';
 
 const DEMO_PASSWORD = {
@@ -384,9 +384,7 @@ async function main() {
     name: 'Resumen trimestral.csv',
     ownerId: editor.id,
     createdAt: daysAgo(10),
-    versions: [
-      { body: quarterlyCsv, mimeType: 'text/csv', createdAt: daysAgo(10) },
-    ],
+    versions: [{ body: quarterlyCsv, mimeType: 'text/csv', createdAt: daysAgo(10) }],
   });
 
   const welcome = Buffer.from(

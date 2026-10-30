@@ -1,16 +1,9 @@
 import { zValidator } from '@hono/zod-validator';
-import {
-  and,
-  asc,
-  desc,
-  eq,
-  isNull,
-  sql,
-} from 'drizzle-orm';
+import { and, asc, desc, eq, isNull, sql } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
 import { db } from '../db';
-import { fileVersions, files, folders, users } from '../db/schema';
+import { files, fileVersions, folders, users } from '../db/schema';
 import { fileDto, versionDto } from '../dto';
 import { logActivity } from '../lib/activity';
 import { HttpError, validationHook } from '../lib/http';
@@ -24,13 +17,8 @@ import {
   UPLOAD_URL_TTL_SECONDS,
   verifyUploadTicket,
 } from '../lib/storage';
-import {
-  fileNameSchema,
-  fileSizeSchema,
-  isAllowedFileType,
-  uuidSchema,
-} from '../lib/validation';
-import { requireAuth, requireRole, type AppEnv } from '../middleware/auth';
+import { fileNameSchema, fileSizeSchema, isAllowedFileType, uuidSchema } from '../lib/validation';
+import { type AppEnv, requireAuth, requireRole } from '../middleware/auth';
 
 const listQuerySchema = z.object({
   folderId: uuidSchema.optional(),
@@ -115,10 +103,7 @@ async function requireFile(fileId: string) {
   return row;
 }
 
-function dtoFromRow(
-  row: NonNullable<Awaited<ReturnType<typeof findFile>>>,
-  versionCount: number,
-) {
+function dtoFromRow(row: NonNullable<Awaited<ReturnType<typeof findFile>>>, versionCount: number) {
   return fileDto({
     file: row.file,
     version: row.version,
@@ -129,46 +114,42 @@ function dtoFromRow(
 
 export const filesRoutes = new Hono<AppEnv>()
   .use('*', requireAuth)
-  .get(
-    '/',
-    zValidator('query', listQuerySchema, validationHook),
-    async (c) => {
-      const { folderId } = c.req.valid('query');
+  .get('/', zValidator('query', listQuerySchema, validationHook), async (c) => {
+    const { folderId } = c.req.valid('query');
 
-      const rows = await db
-        .select({
-          file: files,
-          version: fileVersions,
-          ownerName: users.name,
-          versionCount: sql<number>`(
+    const rows = await db
+      .select({
+        file: files,
+        version: fileVersions,
+        ownerName: users.name,
+        versionCount: sql<number>`(
             select count(*)::int from ${fileVersions}
             where ${fileVersions.fileId} = ${files.id}
           )`,
-        })
-        .from(files)
-        .leftJoin(fileVersions, eq(files.currentVersionId, fileVersions.id))
-        .leftJoin(users, eq(files.ownerId, users.id))
-        .where(
-          and(
-            isNull(files.deletedAt),
-            folderId ? eq(files.folderId, folderId) : isNull(files.folderId),
-          ),
-        )
-        .orderBy(asc(sql`lower(${files.name})`));
+      })
+      .from(files)
+      .leftJoin(fileVersions, eq(files.currentVersionId, fileVersions.id))
+      .leftJoin(users, eq(files.ownerId, users.id))
+      .where(
+        and(
+          isNull(files.deletedAt),
+          folderId ? eq(files.folderId, folderId) : isNull(files.folderId),
+        ),
+      )
+      .orderBy(asc(sql`lower(${files.name})`));
 
-      return c.json(
-        {
-          files: rows.map((row) =>
-            dtoFromRow(
-              { file: row.file, version: row.version, ownerName: row.ownerName },
-              Number(row.versionCount ?? 0),
-            ),
+    return c.json(
+      {
+        files: rows.map((row) =>
+          dtoFromRow(
+            { file: row.file, version: row.version, ownerName: row.ownerName },
+            Number(row.versionCount ?? 0),
           ),
-        },
-        200,
-      );
-    },
-  )
+        ),
+      },
+      200,
+    );
+  })
   .post(
     '/upload-url',
     requireRole('admin', 'editor'),
@@ -178,11 +159,7 @@ export const filesRoutes = new Hono<AppEnv>()
       const input = c.req.valid('json');
 
       if (!isAllowedFileType(input.name, input.mimeType)) {
-        throw new HttpError(
-          400,
-          'FILE_TYPE_NOT_ALLOWED',
-          'Ese tipo de archivo no está permitido.',
-        );
+        throw new HttpError(400, 'FILE_TYPE_NOT_ALLOWED', 'Ese tipo de archivo no está permitido.');
       }
 
       const folderId = await getFolderNameIfValid(input.folderId);
@@ -318,51 +295,40 @@ export const filesRoutes = new Hono<AppEnv>()
       );
     },
   )
-  .get(
-    '/:id',
-    zValidator('param', idParamSchema, validationHook),
-    async (c) => {
-      const { id } = c.req.valid('param');
-      const row = await requireFile(id);
-      return c.json(
-        { file: dtoFromRow(row, await getVersionCount(id)) },
-        200,
-      );
-    },
-  )
-  .get(
-    '/:id/download',
-    zValidator('param', idParamSchema, validationHook),
-    async (c) => {
-      const user = c.get('user');
-      const { id } = c.req.valid('param');
-      const row = await requireFile(id);
+  .get('/:id', zValidator('param', idParamSchema, validationHook), async (c) => {
+    const { id } = c.req.valid('param');
+    const row = await requireFile(id);
+    return c.json({ file: dtoFromRow(row, await getVersionCount(id)) }, 200);
+  })
+  .get('/:id/download', zValidator('param', idParamSchema, validationHook), async (c) => {
+    const user = c.get('user');
+    const { id } = c.req.valid('param');
+    const row = await requireFile(id);
 
-      if (row.file.status !== 'ready' || !row.version) {
-        throw new HttpError(409, 'FILE_NOT_READY', 'El archivo todavía no está disponible.');
-      }
+    if (row.file.status !== 'ready' || !row.version) {
+      throw new HttpError(409, 'FILE_NOT_READY', 'El archivo todavía no está disponible.');
+    }
 
-      const url = await signDownloadUrl(row.version.storageKey, row.file.name);
-      await logActivity({
-        userId: user.id,
-        action: 'file.download',
-        targetType: 'file',
-        targetId: id,
-        metadata: { name: row.file.name },
-      });
+    const url = await signDownloadUrl(row.version.storageKey, row.file.name);
+    await logActivity({
+      userId: user.id,
+      action: 'file.download',
+      targetType: 'file',
+      targetId: id,
+      metadata: { name: row.file.name },
+    });
 
-      return c.json(
-        {
-          url,
-          fileName: row.file.name,
-          mimeType: row.version.mimeType,
-          size: row.version.size,
-          expiresIn: DOWNLOAD_URL_TTL_SECONDS,
-        },
-        200,
-      );
-    },
-  )
+    return c.json(
+      {
+        url,
+        fileName: row.file.name,
+        mimeType: row.version.mimeType,
+        size: row.version.size,
+        expiresIn: DOWNLOAD_URL_TTL_SECONDS,
+      },
+      200,
+    );
+  })
   .patch(
     '/:id',
     requireRole('admin', 'editor'),
@@ -385,11 +351,7 @@ export const filesRoutes = new Hono<AppEnv>()
       const input = c.req.valid('json');
       const row = await requireFile(id);
 
-      if (
-        input.name &&
-        row.version &&
-        !isAllowedFileType(input.name, row.version.mimeType)
-      ) {
+      if (input.name && row.version && !isAllowedFileType(input.name, row.version.mimeType)) {
         throw new HttpError(
           400,
           'FILE_TYPE_NOT_ALLOWED',
@@ -398,9 +360,7 @@ export const filesRoutes = new Hono<AppEnv>()
       }
 
       const folderId =
-        input.folderId === undefined
-          ? undefined
-          : await getFolderNameIfValid(input.folderId);
+        input.folderId === undefined ? undefined : await getFolderNameIfValid(input.folderId);
 
       const [updated] = await db
         .update(files)
@@ -432,9 +392,7 @@ export const filesRoutes = new Hono<AppEnv>()
             file: updated,
             version: row.version,
             versionCount: await getVersionCount(id),
-            owner: row.ownerName
-              ? { id: updated.ownerId, name: row.ownerName }
-              : null,
+            owner: row.ownerName ? { id: updated.ownerId, name: row.ownerName } : null,
           }),
         },
         200,
@@ -466,35 +424,31 @@ export const filesRoutes = new Hono<AppEnv>()
       return c.json({ ok: true }, 200);
     },
   )
-  .get(
-    '/:id/versions',
-    zValidator('param', idParamSchema, validationHook),
-    async (c) => {
-      const { id } = c.req.valid('param');
-      await requireFile(id);
+  .get('/:id/versions', zValidator('param', idParamSchema, validationHook), async (c) => {
+    const { id } = c.req.valid('param');
+    await requireFile(id);
 
-      const rows = await db
-        .select({ version: fileVersions, authorName: users.name })
-        .from(fileVersions)
-        .leftJoin(users, eq(fileVersions.createdBy, users.id))
-        .where(eq(fileVersions.fileId, id))
-        .orderBy(desc(fileVersions.versionNumber));
+    const rows = await db
+      .select({ version: fileVersions, authorName: users.name })
+      .from(fileVersions)
+      .leftJoin(users, eq(fileVersions.createdBy, users.id))
+      .where(eq(fileVersions.fileId, id))
+      .orderBy(desc(fileVersions.versionNumber));
 
-      return c.json(
-        {
-          versions: rows.map((row) =>
-            versionDto(
-              row.version,
-              row.authorName && row.version.createdBy
-                ? { id: row.version.createdBy, name: row.authorName }
-                : null,
-            ),
+    return c.json(
+      {
+        versions: rows.map((row) =>
+          versionDto(
+            row.version,
+            row.authorName && row.version.createdBy
+              ? { id: row.version.createdBy, name: row.authorName }
+              : null,
           ),
-        },
-        200,
-      );
-    },
-  )
+        ),
+      },
+      200,
+    );
+  })
   .post(
     '/:id/versions/upload-url',
     requireRole('admin', 'editor'),
@@ -530,10 +484,7 @@ export const filesRoutes = new Hono<AppEnv>()
         mimeType: input.mimeType,
       });
 
-      return c.json(
-        { versionNumber, uploadUrl, ticket, expiresIn: UPLOAD_URL_TTL_SECONDS },
-        201,
-      );
+      return c.json({ versionNumber, uploadUrl, ticket, expiresIn: UPLOAD_URL_TTL_SECONDS }, 201);
     },
   )
   .post(
@@ -547,11 +498,7 @@ export const filesRoutes = new Hono<AppEnv>()
       const { ticket, checksum } = c.req.valid('json');
       const payload = await verifyUploadTicket(ticket);
 
-      if (
-        payload.userId !== user.id ||
-        payload.fileId !== id ||
-        payload.versionNumber !== n
-      ) {
+      if (payload.userId !== user.id || payload.fileId !== id || payload.versionNumber !== n) {
         throw new HttpError(400, 'INVALID_UPLOAD_TICKET', 'El comprobante no corresponde.');
       }
 

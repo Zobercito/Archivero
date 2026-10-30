@@ -1,11 +1,6 @@
 export function Logo({ className = 'size-8' }: { className?: string }) {
   return (
-    <svg
-      viewBox="0 0 40 40"
-      fill="none"
-      aria-hidden
-      className={className}
-    >
+    <svg viewBox="0 0 40 40" fill="none" aria-hidden className={className}>
       <rect
         x="4.5"
         y="8.5"
@@ -15,11 +10,7 @@ export function Logo({ className = 'size-8' }: { className?: string }) {
         stroke="currentColor"
         strokeWidth="1.8"
       />
-      <path
-        d="M4.5 15.5H35.5"
-        stroke="currentColor"
-        strokeWidth="1.8"
-      />
+      <path d="M4.5 15.5H35.5" stroke="currentColor" strokeWidth="1.8" />
       <path
         d="M10 21H30M10 26H30M10 31H23"
         stroke="currentColor"

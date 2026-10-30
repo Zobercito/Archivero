@@ -2,21 +2,14 @@ export function formatBytes(bytes: number | null | undefined, locale: string) {
   if (bytes === null || bytes === undefined) return '—';
   if (bytes === 0) return '0 B';
   const units = ['B', 'KB', 'MB', 'GB'];
-  const index = Math.min(
-    units.length - 1,
-    Math.floor(Math.log(bytes) / Math.log(1024)),
-  );
+  const index = Math.min(units.length - 1, Math.floor(Math.log(bytes) / Math.log(1024)));
   const value = bytes / 1024 ** index;
   return `${new Intl.NumberFormat(locale, {
     maximumFractionDigits: value >= 10 || index === 0 ? 0 : 1,
   }).format(value)} ${units[index]}`;
 }
 
-export function formatDate(
-  iso: string | null | undefined,
-  locale: string,
-  withTime = false,
-) {
+export function formatDate(iso: string | null | undefined, locale: string, withTime = false) {
   if (!iso) return '—';
   return new Intl.DateTimeFormat(locale, {
     dateStyle: 'medium',

@@ -1,11 +1,11 @@
 import {
   createContext,
+  type ReactNode,
   useCallback,
   useContext,
   useEffect,
   useMemo,
   useState,
-  type ReactNode,
 } from 'react';
 import { en } from './en';
 import { es, type TranslationKey, type Translator } from './es';
@@ -63,5 +63,5 @@ export function useI18n() {
   return context;
 }
 
-export { es };
 export type { TranslationKey, Translator };
+export { es };

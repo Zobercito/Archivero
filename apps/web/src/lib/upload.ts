@@ -17,6 +17,27 @@ export const ACCEPTED_EXTENSIONS = [
 
 export const fileInputAccept = ACCEPTED_EXTENSIONS.map((ext) => `.${ext}`).join(',');
 
+const MIME_BY_EXTENSION: Record<string, string> = {
+  pdf: 'application/pdf',
+  png: 'image/png',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  webp: 'image/webp',
+  gif: 'image/gif',
+  txt: 'text/plain',
+  md: 'text/markdown',
+  csv: 'text/csv',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  zip: 'application/zip',
+};
+
+export function mimeForFile(file: File) {
+  const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
+  return MIME_BY_EXTENSION[extension] ?? (file.type || 'application/octet-stream');
+}
+
 export function isAcceptedFile(file: File) {
   const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
   return (ACCEPTED_EXTENSIONS as readonly string[]).includes(extension);
@@ -25,12 +46,13 @@ export function isAcceptedFile(file: File) {
 export function uploadToSignedUrl(
   url: string,
   file: File,
+  mimeType: string,
   onProgress: (percent: number) => void,
 ) {
   return new Promise<void>((resolve, reject) => {
     const request = new XMLHttpRequest();
     request.open('PUT', url);
-    request.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+    request.setRequestHeader('Content-Type', mimeType);
     request.upload.onprogress = (event) => {
       if (event.lengthComputable) {
         onProgress(Math.round((event.loaded / event.total) * 100));
@@ -48,7 +70,5 @@ export function uploadToSignedUrl(
 export async function sha256(file: File) {
   const buffer = await file.arrayBuffer();
   const digest = await crypto.subtle.digest('SHA-256', buffer);
-  return [...new Uint8Array(digest)]
-    .map((byte) => byte.toString(16).padStart(2, '0'))
-    .join('');
+  return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }

@@ -1,5 +1,5 @@
 import { ArchiveX } from 'lucide-react';
-import { BrowserRouter, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Logo } from '../components/Logo';
 import { useI18n } from '../i18n';
 

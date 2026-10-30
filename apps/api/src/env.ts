@@ -4,7 +4,10 @@ import { config as loadEnv } from 'dotenv';
 import { z } from 'zod';
 
 const envPath = fileURLToPath(
-  new URL(process.env.NODE_ENV === 'test' ? '../../../.env.test' : '../../../.env', import.meta.url),
+  new URL(
+    process.env.NODE_ENV === 'test' ? '../../../.env.test' : '../../../.env',
+    import.meta.url,
+  ),
 );
 
 if (existsSync(envPath)) {

@@ -1,19 +1,17 @@
-import {
-  BrowserRouter,
-  Navigate,
-  Outlet,
-  Route,
-  Routes,
-  useLocation,
-} from 'react-router-dom';
+import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
 import { AppShell } from './components/AppShell';
 import { Logo } from './components/Logo';
+import { RoleGate } from './components/RoleGate';
 import { Spinner } from './components/ui';
 import { useAuth } from './context/auth';
 import { useI18n } from './i18n';
+import { ActivityPage } from './pages/ActivityPage';
 import { BrowsePage } from './pages/BrowsePage';
 import { LoginPage } from './pages/LoginPage';
 import { NotFoundPage } from './pages/NotFoundPage';
+import { PublicSharePage } from './pages/PublicSharePage';
+import { TrashPage } from './pages/TrashPage';
+import { UsersPage } from './pages/UsersPage';
 
 function Splash() {
   const { t } = useI18n();
@@ -35,11 +33,7 @@ function RequireAuth() {
   if (isLoading) return <Splash />;
   if (!user) {
     return (
-      <Navigate
-        to="/login"
-        replace
-        state={{ from: `${location.pathname}${location.search}` }}
-      />
+      <Navigate to="/login" replace state={{ from: `${location.pathname}${location.search}` }} />
     );
   }
   return <Outlet />;
@@ -57,10 +51,35 @@ export function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<LoginRoute />} />
+        <Route path="/s/:token" element={<PublicSharePage />} />
         <Route element={<RequireAuth />}>
           <Route element={<AppShell />}>
             <Route index element={<BrowsePage />} />
             <Route path="folder/:folderId" element={<BrowsePage />} />
+            <Route
+              path="trash"
+              element={
+                <RoleGate roles={['admin', 'editor']}>
+                  <TrashPage />
+                </RoleGate>
+              }
+            />
+            <Route
+              path="activity"
+              element={
+                <RoleGate roles={['admin']}>
+                  <ActivityPage />
+                </RoleGate>
+              }
+            />
+            <Route
+              path="users"
+              element={
+                <RoleGate roles={['admin']}>
+                  <UsersPage />
+                </RoleGate>
+              }
+            />
           </Route>
         </Route>
         <Route path="*" element={<NotFoundPage />} />

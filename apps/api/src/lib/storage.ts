@@ -86,16 +86,13 @@ export async function putObject(key: string, body: Uint8Array, contentType: stri
 
 export async function headObject(key: string) {
   try {
-    const result = await s3.send(
-      new HeadObjectCommand({ Bucket: env.S3_BUCKET, Key: key }),
-    );
+    const result = await s3.send(new HeadObjectCommand({ Bucket: env.S3_BUCKET, Key: key }));
     return {
       size: result.ContentLength ?? 0,
       contentType: result.ContentType ?? 'application/octet-stream',
     };
   } catch (error) {
-    const status = (error as { $metadata?: { httpStatusCode?: number } }).$metadata
-      ?.httpStatusCode;
+    const status = (error as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode;
     if (status === 404) return null;
     throw error;
   }
@@ -158,9 +155,7 @@ export type UploadTicket = {
   exp: number;
 };
 
-export async function createUploadTicket(
-  input: Omit<UploadTicket, 'scope' | 'exp'>,
-) {
+export async function createUploadTicket(input: Omit<UploadTicket, 'scope' | 'exp'>) {
   const now = Math.floor(Date.now() / 1000);
   return sign(
     {

@@ -1,23 +1,14 @@
 import { z } from 'zod';
 import { maxFileSizeBytes } from '../env';
 
-export const emailSchema = z
-  .string()
-  .trim()
-  .toLowerCase()
-  .email('Correo inválido')
-  .max(254);
+export const emailSchema = z.string().trim().toLowerCase().email('Correo inválido').max(254);
 
 export const passwordSchema = z
   .string()
   .min(10, 'La contraseña debe tener al menos 10 caracteres')
   .max(128);
 
-export const displayNameSchema = z
-  .string()
-  .trim()
-  .min(2, 'El nombre es demasiado corto')
-  .max(120);
+export const displayNameSchema = z.string().trim().min(2, 'El nombre es demasiado corto').max(120);
 
 export const folderNameSchema = z
   .string()

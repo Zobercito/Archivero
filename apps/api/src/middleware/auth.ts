@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { createMiddleware } from 'hono/factory';
 import { db } from '../db';
-import { users, type UserRole } from '../db/schema';
+import { type UserRole, users } from '../db/schema';
 import { HttpError } from '../lib/http';
 import { clearSessionCookie, readSessionToken } from '../lib/session';
 

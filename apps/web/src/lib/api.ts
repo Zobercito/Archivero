@@ -1,8 +1,7 @@
 import { hc } from 'hono/client';
 import type { AppType } from '../../../api/src/app';
 
-const origin =
-  typeof window === 'undefined' ? 'http://localhost:5173' : window.location.origin;
+const origin = typeof window === 'undefined' ? 'http://localhost:5173' : window.location.origin;
 
 export const api = hc<AppType>(origin, {
   init: {
@@ -40,9 +39,7 @@ type SuccessBody<R> = R extends { json: () => Promise<infer B> }
     : B
   : never;
 
-export async function unwrap<R extends JsonResponse>(
-  response: R,
-): Promise<SuccessBody<R>> {
+export async function unwrap<R extends JsonResponse>(response: R): Promise<SuccessBody<R>> {
   let body: unknown = null;
   try {
     body = await response.json();
