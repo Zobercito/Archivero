@@ -7,6 +7,7 @@ import { useI18n } from '../i18n';
 import { api, unwrap } from '../lib/api';
 import { buildFolderTree, type FolderNode } from '../lib/folders';
 import { initials, isAdmin, isEditor } from '../lib/format';
+import { DemoBanner } from './DemoBanner';
 import { LanguageToggle } from './LanguageToggle';
 import { Logo } from './Logo';
 import { RoleBadge } from './RoleBadge';
@@ -218,6 +219,7 @@ export function AppShell() {
 
       <main className="min-w-0">
         <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-8 lg:px-10 lg:py-12">
+          <DemoBanner showLink />
           <Outlet />
         </div>
       </main>

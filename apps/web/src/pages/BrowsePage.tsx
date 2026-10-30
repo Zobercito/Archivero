@@ -93,7 +93,7 @@ export function BrowsePage() {
   const downloadMutation = useMutation({
     mutationFn: async (file: FileItem) =>
       unwrap(await api.api.files[':id'].download.$get({ param: { id: file.id } })),
-    onSuccess: (result) => saveUrl(result.url),
+    onSuccess: (result) => saveUrl(result.url, result.fileName),
     onError: (cause) => notify(errorText(t, cause), 'error'),
   });
 

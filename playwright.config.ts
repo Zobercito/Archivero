@@ -6,6 +6,7 @@ const baseURL = `http://localhost:${webPort}`;
 
 export default defineConfig({
   testDir: './e2e',
+  testIgnore: 'demo.spec.ts',
   fullyParallel: false,
   workers: 1,
   timeout: 90_000,

@@ -1,11 +1,14 @@
 import { Eye, EyeOff, KeyRound, Mail } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { DemoBanner } from '../components/DemoBanner';
 import { LanguageToggle } from '../components/LanguageToggle';
 import { Logo } from '../components/Logo';
+import { RoleBadge } from '../components/RoleBadge';
 import { Button, Field, Input } from '../components/ui';
 import { useAuth } from '../context/auth';
 import { type TranslationKey, useI18n } from '../i18n';
+import { DEMO_ACCOUNTS, DEMO_MODE } from '../lib/demo';
 import { errorText } from '../lib/errors';
 
 const DEMO_EMAIL = 'sofia@archivero.demo';
@@ -119,6 +122,7 @@ export function LoginPage() {
         </div>
 
         <div className="mx-auto flex w-full max-w-[390px] flex-1 flex-col justify-center py-12">
+          <DemoBanner />
           <p className="eyebrow">{t('login.eyebrow')}</p>
           <h2 className="display mt-3 text-4xl leading-tight">{t('login.title')}</h2>
           <p className="mt-3 text-sm leading-relaxed text-ink-soft">{t('login.subtitle')}</p>
@@ -191,40 +195,82 @@ export function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-8 border border-dashed border-rule-strong/70 bg-paper-light/60 p-4">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-[0.62rem] font-bold uppercase tracking-[0.2em] text-terracotta">
-                  {t('login.demoTitle')}
-                </p>
-                <p className="mt-1 text-xs leading-relaxed text-ink-soft">{t('login.demoBody')}</p>
+          {DEMO_MODE ? (
+            <div className="mt-8 border border-dashed border-rule-strong/70 bg-paper-light/60 p-4">
+              <p className="text-[0.62rem] font-bold uppercase tracking-[0.2em] text-terracotta">
+                {t('demo.loginTitle')}
+              </p>
+              <p className="mt-1 text-xs leading-relaxed text-ink-soft">{t('demo.loginBody')}</p>
+
+              <div className="mt-3 grid gap-2">
+                {DEMO_ACCOUNTS.map((account) => (
+                  <button
+                    key={account.email}
+                    type="button"
+                    disabled={busy}
+                    onClick={() => void enter({ email: account.email, password: account.password })}
+                    className="flex w-full items-center justify-between gap-3 border border-rule bg-paper-light px-3 py-2.5 text-left transition hover:border-terracotta/50 hover:bg-terracotta-soft/40 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <span className="min-w-0">
+                      <span className="block truncate text-sm font-semibold text-ink">
+                        {account.name}
+                      </span>
+                      <span className="mt-0.5 block truncate font-mono text-[0.62rem] text-ink-faint">
+                        {account.email}
+                      </span>
+                    </span>
+                    <span className="flex shrink-0 items-center gap-2">
+                      <RoleBadge role={account.role} />
+                      <span className="text-[0.62rem] font-semibold uppercase tracking-[0.12em] text-terracotta">
+                        {t('demo.enter')}
+                      </span>
+                    </span>
+                  </button>
+                ))}
               </div>
-              <span className="stamp shrink-0 px-2 py-1 text-[0.5rem]">
-                {t('shell.role.viewer')}
-              </span>
+
+              <p className="mt-3 text-[0.65rem] leading-relaxed text-ink-faint">
+                {t('demo.resetNote')}
+              </p>
             </div>
+          ) : (
+            <div className="mt-8 border border-dashed border-rule-strong/70 bg-paper-light/60 p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-[0.62rem] font-bold uppercase tracking-[0.2em] text-terracotta">
+                    {t('login.demoTitle')}
+                  </p>
+                  <p className="mt-1 text-xs leading-relaxed text-ink-soft">
+                    {t('login.demoBody')}
+                  </p>
+                </div>
+                <span className="stamp shrink-0 px-2 py-1 text-[0.5rem]">
+                  {t('shell.role.viewer')}
+                </span>
+              </div>
 
-            <dl className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 border-t border-rule/80 pt-3 text-[0.7rem]">
-              <dt className="uppercase tracking-[0.14em] text-ink-faint">
-                {t('login.demoEmailLabel')}
-              </dt>
-              <dd className="truncate font-mono text-ink">{DEMO_EMAIL}</dd>
-              <dt className="uppercase tracking-[0.14em] text-ink-faint">
-                {t('login.demoPasswordLabel')}
-              </dt>
-              <dd className="font-mono text-ink">{DEMO_PASSWORD}</dd>
-            </dl>
+              <dl className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 border-t border-rule/80 pt-3 text-[0.7rem]">
+                <dt className="uppercase tracking-[0.14em] text-ink-faint">
+                  {t('login.demoEmailLabel')}
+                </dt>
+                <dd className="truncate font-mono text-ink">{DEMO_EMAIL}</dd>
+                <dt className="uppercase tracking-[0.14em] text-ink-faint">
+                  {t('login.demoPasswordLabel')}
+                </dt>
+                <dd className="font-mono text-ink">{DEMO_PASSWORD}</dd>
+              </dl>
 
-            <Button
-              variant="secondary"
-              size="sm"
-              className="mt-3 w-full"
-              disabled={busy}
-              onClick={() => void enter({ email: DEMO_EMAIL, password: DEMO_PASSWORD })}
-            >
-              {t('login.demoAction')}
-            </Button>
-          </div>
+              <Button
+                variant="secondary"
+                size="sm"
+                className="mt-3 w-full"
+                disabled={busy}
+                onClick={() => void enter({ email: DEMO_EMAIL, password: DEMO_PASSWORD })}
+              >
+                {t('login.demoAction')}
+              </Button>
+            </div>
+          )}
         </div>
 
         <p className="mx-auto max-w-[390px] text-center text-[0.65rem] leading-relaxed text-ink-faint">

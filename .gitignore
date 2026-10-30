@@ -1,6 +1,7 @@
 node_modules/
 dist/
 dist-ssr/
+dist-demo/
 coverage/
 playwright-report/
 test-results/

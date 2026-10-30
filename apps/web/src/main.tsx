@@ -28,16 +28,25 @@ const queryClient = new QueryClient({
 const container = document.getElementById('root');
 if (!container) throw new Error('Root element not found');
 
-createRoot(container).render(
-  <StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <I18nProvider>
-        <ToastProvider>
-          <AuthProvider>
-            <App />
-          </AuthProvider>
-        </ToastProvider>
-      </I18nProvider>
-    </QueryClientProvider>
-  </StrictMode>,
-);
+async function bootstrap(root: HTMLElement) {
+  if (import.meta.env.VITE_DEMO === 'true') {
+    const { installDemoBackend } = await import('./demo');
+    installDemoBackend();
+  }
+
+  createRoot(root).render(
+    <StrictMode>
+      <QueryClientProvider client={queryClient}>
+        <I18nProvider>
+          <ToastProvider>
+            <AuthProvider>
+              <App />
+            </AuthProvider>
+          </ToastProvider>
+        </I18nProvider>
+      </QueryClientProvider>
+    </StrictMode>,
+  );
+}
+
+void bootstrap(container);

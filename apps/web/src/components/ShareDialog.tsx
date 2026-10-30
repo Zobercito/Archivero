@@ -1,10 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link2, ShieldCheck } from 'lucide-react';
 import { type FormEvent, useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useToast } from '../context/toast';
 import { useI18n } from '../i18n';
 import { api, unwrap } from '../lib/api';
 import { copyText } from '../lib/clipboard';
+import { DEMO_MODE } from '../lib/demo';
 import { errorText } from '../lib/errors';
 import { formatDate, formatLocalInput } from '../lib/format';
 import type { FileItem, ShareCreated, ShareLinkItem } from '../lib/types';
@@ -173,6 +175,19 @@ export function ShareDialog({ file, onClose }: { file: FileItem | null; onClose:
             <p className="mt-2 text-[0.7rem] leading-relaxed text-ink-soft">
               {t('share.once')} {t('share.oneTime')}
             </p>
+            {DEMO_MODE && (
+              <div className="mt-3 border-t border-moss/30 pt-2.5">
+                <Link
+                  to={`/s/${created.token}`}
+                  className="text-xs font-semibold text-moss underline decoration-moss/40 underline-offset-2 transition hover:text-ink"
+                >
+                  {t('demo.previewLink')}
+                </Link>
+                <p className="mt-1 text-[0.68rem] leading-relaxed text-ink-soft">
+                  {t('demo.previewNote')}
+                </p>
+              </div>
+            )}
           </div>
         )}
 

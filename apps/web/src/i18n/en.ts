@@ -58,6 +58,18 @@ export const en = {
   'login.feature3Body': 'Administration, editing and reading, enforced on the server.',
   'login.stamp': 'Archive open',
 
+  'demo.bannerTitle': 'Interactive demo.',
+  'demo.bannerBody':
+    'Data is simulated in your browser: nothing is sent to a server and everything resets on reload.',
+  'demo.loginTitle': 'Try the three roles',
+  'demo.loginBody':
+    'Sign in with one click as admin, editor or viewer. Each role sees different actions.',
+  'demo.enter': 'Enter',
+  'demo.resetNote': 'The demo only lives in this tab. Reloading resets it to its initial state.',
+  'demo.sampleLink': 'View public link',
+  'demo.previewLink': 'Open the public view of this link',
+  'demo.previewNote': 'In the demo it opens in this tab. Reloading restores the simulated link.',
+
   'shell.explore': 'Explorer',
   'shell.trash': 'Trash',
   'shell.activity': 'Activity',

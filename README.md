@@ -9,11 +9,30 @@ Gestor de archivos con roles, versiones, papelera y enlaces públicos con caduci
 
 ## Demo
 
-> **URL:** `https://<tu-dominio>.vercel.app` (sustitúyela al desplegar; los pasos están en [docs/deploy.md](docs/deploy.md)).
->
-> **Cuenta de lector:** `sofia@archivero.demo` · `Lector!2026`
+Archivero incluye una **demo interactiva sin backend**. La interfaz se abre con un cliente de API simulado que vive en el navegador: puedes entrar con los tres roles, subir archivos, crear versiones, usar la papelera y abrir enlaces públicos. Las descargas se generan como blobs locales.
 
-La demo pública solo muestra la cuenta de lector. Editor y administración existen para probar el proyecto en local con datos ficticios.
+Nada se envía a un servidor y todo se reinicia al recargar la página.
+
+```bash
+bun install
+bun run demo   # http://localhost:5174
+```
+
+| Rol            | Correo                 | Contraseña    |
+| -------------- | ---------------------- | ------------- |
+| Administración | `elena@archivero.demo` | `Admin!2026`  |
+| Edición        | `mateo@archivero.demo` | `Editor!2026` |
+| Lectura        | `sofia@archivero.demo` | `Lector!2026` |
+
+También puedes entrar con un clic desde la pantalla de acceso y abrir el enlace público de ejemplo en `/s/demo-norte-2026`.
+
+Para generar la versión estática de la demo, sin base de datos ni variables de entorno:
+
+```bash
+bun run build:demo   # apps/web/dist-demo
+```
+
+La app completa con API real, PostgreSQL y almacenamiento S3 se levanta como se explica en [Probar en local](#probar-en-local) y [Despliegue](#despliegue).
 
 ## Probar en local
 
@@ -48,7 +67,7 @@ La interfaz queda en `http://localhost:5173`. Cuentas del seed:
 | Interfaz | React 19, Vite, TypeScript, Tailwind CSS v4, TanStack Query, React Router           |
 | API      | Hono, Zod, `@hono/zod-validator`, cliente tipado `hc`                               |
 | Datos    | PostgreSQL, Drizzle ORM y drizzle-kit                                               |
-| Archivos | S3 compatible (SeaweedFS en local, Cloudflare R2 en la demo) con URLs firmadas      |
+| Archivos | S3 compatible (SeaweedFS en local, Cloudflare R2 en despliegue) con URLs firmadas   |
 | Sesión   | JWT en cookie httpOnly y contraseñas con Argon2id                                   |
 | Pruebas  | Vitest contra PostgreSQL y almacenamiento reales, Playwright para el flujo completo |
 | Entorno  | Docker Compose, Bun en desarrollo, runtime Node en producción                       |
@@ -85,9 +104,10 @@ bun run lint        # Biome
 bun run typecheck   # API, web, función de Vercel y pruebas
 bun run test        # integración de la API con PostgreSQL y almacenamiento
 bun run test:e2e    # flujo completo en Chromium
+bun run test:demo   # demo interactiva en Chromium, sin backend
 ```
 
-El flujo e2e levanta la API y la interfaz contra la base y el bucket de pruebas, vuelve a sembrar los datos y cubre subida, versiones, papelera, enlace público y permisos de lectura. GitHub Actions ejecuta lint, tipos, build, pruebas de API y e2e en cada push y pull request.
+El flujo e2e levanta la API y la interfaz contra la base y el bucket de pruebas, vuelve a sembrar los datos y cubre subida, versiones, papelera, enlace público y permisos de lectura. La suite de la demo comprueba los tres roles, la subida simulada, las versiones y el enlace público sin levantar ningún servicio. GitHub Actions ejecuta lint, tipos, build, pruebas de API, e2e y demo en cada push y pull request.
 
 ## Despliegue
 

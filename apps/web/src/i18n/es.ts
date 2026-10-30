@@ -56,6 +56,19 @@ export const es = {
   'login.feature3Body': 'Administración, edición y lectura, verificados en el servidor.',
   'login.stamp': 'Archivo abierto',
 
+  'demo.bannerTitle': 'Demo interactiva.',
+  'demo.bannerBody':
+    'Datos simulados en tu navegador: nada se envía a un servidor y todo se reinicia al recargar.',
+  'demo.loginTitle': 'Prueba los tres roles',
+  'demo.loginBody':
+    'Entra con un clic como administración, edición o lectura. Cada rol ve acciones distintas.',
+  'demo.enter': 'Entrar',
+  'demo.resetNote': 'La demo vive solo en esta pestaña. Al recargar, vuelve a su estado inicial.',
+  'demo.sampleLink': 'Ver enlace público',
+  'demo.previewLink': 'Abrir la vista pública de este enlace',
+  'demo.previewNote':
+    'En la demo se abre en esta pestaña. Al recargar, el enlace vuelve a su estado simulado.',
+
   'shell.explore': 'Explorador',
   'shell.trash': 'Papelera',
   'shell.activity': 'Actividad',

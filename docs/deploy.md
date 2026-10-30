@@ -1,4 +1,8 @@
-# Despliegue de la demo
+# Despliegue opcional de la app completa
+
+Esta guía describe la app real con API, PostgreSQL y almacenamiento S3. La demo
+interactiva del README no necesita nada de esto: se ejecuta en el navegador con
+`bun run demo`.
 
 Arquitectura desplegada:
 
@@ -90,7 +94,7 @@ función de Vercel solo intercambia metadatos y no recibe el cuerpo del archivo.
 3. Despliega. Comprueba `https://<dominio>/api/health` y entra con la cuenta de
    lector.
 
-## 4. Límites de la demo
+## 4. Límites del despliegue público
 
 - Publica **solo** la cuenta de lector; no difundas las de editor o
   administración.
@@ -100,7 +104,7 @@ función de Vercel solo intercambia metadatos y no recibe el cuerpo del archivo.
   acceso público a enlaces a 120 peticiones por minuto por IP.
 - Los enlaces públicos caducan por fecha o por número de descargas y se pueden
   revocar; el token se guarda únicamente como hash.
-- La demo no permite registro ni recuperación de contraseña.
+- La app no permite registro ni recuperación de contraseña.
 
 ## 5. Mantenimiento
 

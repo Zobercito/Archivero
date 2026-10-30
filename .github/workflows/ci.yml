@@ -22,6 +22,7 @@ jobs:
       - run: bun run lint
       - run: bun run typecheck
       - run: bun run build
+      - run: bun run build:demo
 
   tests:
     name: Pruebas de API y e2e
@@ -71,6 +72,9 @@ jobs:
 
       - name: Instalar Chromium
         run: bunx playwright install --with-deps chromium
+
+      - name: Demo interactiva e2e
+        run: bun run test:demo
 
       - name: Flujo completo e2e
         run: bun run test:e2e

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Download, Link2Off, ShieldCheck } from 'lucide-react';
 import { Link, useParams } from 'react-router-dom';
+import { DemoBanner } from '../components/DemoBanner';
 import { FileIcon } from '../components/FileIcon';
 import { LanguageToggle } from '../components/LanguageToggle';
 import { Logo } from '../components/Logo';
@@ -39,7 +40,7 @@ export function PublicSharePage() {
         }),
       ),
     onSuccess: (result) => {
-      saveUrl(result.url);
+      saveUrl(result.url, result.fileName);
       notify(t('public.downloadStarted'), 'success');
       if (result.remainingDownloads === 0) {
         notify(t('public.lastDownload'), 'info');
@@ -71,6 +72,10 @@ export function PublicSharePage() {
         </Link>
         <LanguageToggle />
       </header>
+
+      <div className="mx-auto w-full max-w-3xl px-5 pt-6 sm:px-8">
+        <DemoBanner />
+      </div>
 
       <main className="flex flex-1 items-center justify-center px-5 py-10 sm:py-16">
         {shareQuery.isLoading ? (
