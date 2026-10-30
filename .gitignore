@@ -1,0 +1,24 @@
+node_modules/
+dist/
+dist-ssr/
+coverage/
+playwright-report/
+test-results/
+blob-report/
+
+.env
+.env.local
+.env.*.local
+.env.test
+!.env.example
+
+.DS_Store
+*.log
+*.tsbuildinfo
+
+.vercel
+.bun/
+
+# Material de referencia privado: no debe publicarse.
+plan.md
+repomix-output.xml
