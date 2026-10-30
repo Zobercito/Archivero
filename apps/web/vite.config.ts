@@ -2,13 +2,17 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
+const port = Number(process.env.WEB_PORT ?? 5173);
+const apiTarget = process.env.API_PROXY_TARGET ?? 'http://localhost:3001';
+
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
-    port: 5173,
+    port,
+    strictPort: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        target: apiTarget,
         changeOrigin: false,
       },
     },
