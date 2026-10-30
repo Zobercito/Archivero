@@ -46,9 +46,11 @@ function LoginRoute() {
   return <LoginPage />;
 }
 
+const basename = import.meta.env.BASE_URL.replace(/\/$/, '') || '/';
+
 export function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={basename}>
       <Routes>
         <Route path="/login" element={<LoginRoute />} />
         <Route path="/s/:token" element={<PublicSharePage />} />

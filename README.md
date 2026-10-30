@@ -2,12 +2,15 @@
 
 Gestor de archivos con roles, versiones, papelera y enlaces públicos con caducidad. Un archivo pequeño y ordenado, con una interfaz editorial pensada para leerse con calma.
 
-[![CI](https://github.com/Zobercito/archivero/actions/workflows/ci.yml/badge.svg)](https://github.com/Zobercito/archivero/actions/workflows/ci.yml)
+[![Demo en línea](https://img.shields.io/badge/demo-en_l%C3%ADnea-b4532a.svg)](https://zobercito.github.io/Archivero/)
+[![CI](https://github.com/Zobercito/Archivero/actions/workflows/ci.yml/badge.svg)](https://github.com/Zobercito/Archivero/actions/workflows/ci.yml)
 [![Licencia MIT](https://img.shields.io/badge/licencia-MIT-b4532a.svg)](LICENSE)
 
 ![Subir, versionar, compartir y recuperar de la papelera](docs/media/archivero.gif)
 
 ## Demo
+
+Puedes probarla sin instalar nada en **[zobercito.github.io/Archivero](https://zobercito.github.io/Archivero/)**.
 
 Archivero incluye una **demo interactiva sin backend**. La interfaz se abre con un cliente de API simulado que vive en el navegador: puedes entrar con los tres roles, subir archivos, crear versiones, usar la papelera y abrir enlaces públicos. Las descargas se generan como blobs locales.
 
@@ -32,7 +35,7 @@ Para generar la versión estática de la demo, sin base de datos ni variables de
 bun run build:demo   # apps/web/dist-demo
 ```
 
-La app completa con API real, PostgreSQL y almacenamiento S3 se levanta como se explica en [Probar en local](#probar-en-local) y [Despliegue](#despliegue).
+La versión publicada en GitHub Pages se reconstruye con cada push a `main` mediante el workflow `Demo`. La app completa con API real, PostgreSQL y almacenamiento S3 se levanta como se explica en [Probar en local](#probar-en-local) y [Despliegue](#despliegue).
 
 ## Probar en local
 

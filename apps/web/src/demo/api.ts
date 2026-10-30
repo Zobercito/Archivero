@@ -972,7 +972,7 @@ export async function handleDemoRequest(request: DemoRequest): Promise<Response>
       const created: ShareCreated = {
         link: shareDto(state, link),
         token,
-        url: new URL(`/s/${token}`, window.location.origin).toString(),
+        url: new URL(`${import.meta.env.BASE_URL}s/${token}`, window.location.origin).toString(),
       };
       return jsonResponse(created, 201);
     }
