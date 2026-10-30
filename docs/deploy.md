@@ -4,6 +4,11 @@ Esta guía describe la app real con API, PostgreSQL y almacenamiento S3. La demo
 interactiva del README no necesita nada de esto: se ejecuta en el navegador con
 `bun run demo`.
 
+Si prefieres autoalojarla, el README explica el perfil `full` de Docker Compose,
+que levanta base de datos, almacenamiento, API y web en `http://localhost:8080`.
+Para publicarla en internet, colócala detrás de un proxy con HTTPS, ajusta
+`APP_ORIGIN` y `S3_PUBLIC_ENDPOINT`, y elimina `SESSION_COOKIE_SECURE=false`.
+
 Arquitectura desplegada:
 
 - **Interfaz:** Vite estático en Vercel (`apps/web/dist`).

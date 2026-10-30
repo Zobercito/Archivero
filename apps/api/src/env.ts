@@ -21,7 +21,12 @@ const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
   JWT_SECRET: z.string().min(32, 'JWT_SECRET debe tener al menos 32 caracteres'),
   SESSION_TTL_HOURS: z.coerce.number().int().positive().default(8),
+  SESSION_COOKIE_SECURE: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((value) => (value === undefined ? undefined : value === 'true')),
   S3_ENDPOINT: z.string().default(''),
+  S3_PUBLIC_ENDPOINT: z.string().default(''),
   S3_REGION: z.string().default('us-east-1'),
   S3_BUCKET: z.string().min(1),
   S3_ACCESS_KEY_ID: z.string().min(1),

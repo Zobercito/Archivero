@@ -45,13 +45,36 @@ Requisitos: [Bun](https://bun.sh) y Docker.
 2. `bun install && cp .env.example .env`
 3. `bun run db:migrate && bun run db:seed && bun run dev`
 
-La interfaz queda en `http://localhost:5173`. Cuentas del seed:
+La interfaz queda en `http://localhost:5173`. Para reiniciar los datos de demostración más adelante: `SEED_FORCE=true bun run db:seed`. Cuentas del seed:
 
 | Rol            | Correo                 | Contraseña    |
 | -------------- | ---------------------- | ------------- |
 | Administración | `elena@archivero.demo` | `Admin!2026`  |
 | Edición        | `mateo@archivero.demo` | `Editor!2026` |
 | Lectura        | `sofia@archivero.demo` | `Lector!2026` |
+
+### Stack completo con Docker
+
+El perfil `full` construye la API y la interfaz, aplica migraciones y siembra los datos de demostración si la base está vacía:
+
+```bash
+docker compose --profile full up -d --build
+```
+
+La app queda en `http://localhost:8080`. Si ese puerto está ocupado, cambia solo el puerto publicado (el origen permitido se ajusta solo):
+
+```bash
+ARCHIVERO_WEB_PORT=8090 docker compose --profile full up -d --build
+```
+
+- `docker compose up -d`, sin perfil, sigue levantando únicamente PostgreSQL y SeaweedFS para desarrollo.
+- El seed es idempotente: si ya hay cuentas no toca nada. `SEED_FORCE=true` reinicia los datos y el bucket.
+- `docker compose --profile full down -v` elimina también los volúmenes y deja todo limpio.
+- Las URLs firmadas usan `http://localhost:8333`, que debe ser accesible desde el navegador. Para servir la app en otro host, ajusta `APP_ORIGIN` y `S3_PUBLIC_ENDPOINT` en `docker-compose.yml`.
+- El perfil sirve HTTP local y por eso define `SESSION_COOKIE_SECURE=false`; detrás de HTTPS, elimina esa variable para recuperar la cookie segura por defecto.
+- `DOCKER_JWT_SECRET` y `DOCKER_MAINTENANCE_SECRET` tienen valores de desarrollo; cámbialos antes de exponer el stack.
+
+La imagen de la API es multi-stage, corre como usuario sin privilegios y usa solo dependencias de producción; la web se sirve con nginx, que también hace de proxy para `/api`.
 
 ## Funciones
 
@@ -65,15 +88,15 @@ La interfaz queda en `http://localhost:5173`. Cuentas del seed:
 
 ## Stack
 
-| Capa     | Herramientas                                                                        |
-| -------- | ----------------------------------------------------------------------------------- |
-| Interfaz | React 19, Vite, TypeScript, Tailwind CSS v4, TanStack Query, React Router           |
-| API      | Hono, Zod, `@hono/zod-validator`, cliente tipado `hc`                               |
-| Datos    | PostgreSQL, Drizzle ORM y drizzle-kit                                               |
-| Archivos | S3 compatible (SeaweedFS en local, Cloudflare R2 en despliegue) con URLs firmadas   |
-| Sesión   | JWT en cookie httpOnly y contraseñas con Argon2id                                   |
-| Pruebas  | Vitest contra PostgreSQL y almacenamiento reales, Playwright para el flujo completo |
-| Entorno  | Docker Compose, Bun en desarrollo, runtime Node en producción                       |
+| Capa     | Herramientas                                                                         |
+| -------- | ------------------------------------------------------------------------------------ |
+| Interfaz | React 19, Vite, TypeScript, Tailwind CSS v4, TanStack Query, React Router            |
+| API      | Hono, Zod, `@hono/zod-validator`, cliente tipado `hc`                                |
+| Datos    | PostgreSQL, Drizzle ORM y drizzle-kit                                                |
+| Archivos | S3 compatible (SeaweedFS en local, Cloudflare R2 en despliegue) con URLs firmadas    |
+| Sesión   | JWT en cookie httpOnly y contraseñas con Argon2id                                    |
+| Pruebas  | Vitest contra PostgreSQL y almacenamiento reales, Playwright para el flujo completo  |
+| Entorno  | Docker Compose (infraestructura y stack completo), Bun en desarrollo, Node en Vercel |
 
 ## Decisiones de seguridad
 

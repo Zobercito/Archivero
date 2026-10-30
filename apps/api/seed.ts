@@ -201,6 +201,16 @@ async function createSeedFile(input: {
 async function main() {
   console.log('Preparando almacenamiento…');
   await ensureBucket();
+
+  const [existing] = await db.select({ count: sql<number>`count(*)::int` }).from(users);
+  if ((existing?.count ?? 0) > 0 && process.env.SEED_FORCE !== 'true') {
+    console.log(
+      'La base ya tiene cuentas; se omite la siembra. Usa SEED_FORCE=true para reiniciar los datos de demostración.',
+    );
+    await connection.end();
+    return;
+  }
+
   await deleteObjectPrefix('files/');
 
   await db.execute(

@@ -22,7 +22,7 @@ export async function createSessionToken(userId: string) {
 export function setSessionCookie(c: Context, token: string) {
   setCookie(c, SESSION_COOKIE, token, {
     httpOnly: true,
-    secure: isProduction,
+    secure: env.SESSION_COOKIE_SECURE ?? isProduction,
     sameSite: 'Lax',
     path: '/',
     maxAge: sessionSeconds,
@@ -32,7 +32,7 @@ export function setSessionCookie(c: Context, token: string) {
 export function clearSessionCookie(c: Context) {
   deleteCookie(c, SESSION_COOKIE, {
     path: '/',
-    secure: isProduction,
+    secure: env.SESSION_COOKIE_SECURE ?? isProduction,
     sameSite: 'Lax',
   });
 }

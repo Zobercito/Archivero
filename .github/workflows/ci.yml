@@ -24,6 +24,18 @@ jobs:
       - run: bun run build
       - run: bun run build:demo
 
+  docker:
+    name: Imágenes Docker
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validar Compose
+        run: docker compose --profile full config -q
+      - name: Construir API
+        run: docker build -f apps/api/Dockerfile -t archivero-api:ci .
+      - name: Construir web
+        run: docker build -f apps/web/Dockerfile -t archivero-web:ci .
+
   tests:
     name: Pruebas de API y e2e
     runs-on: ubuntu-latest

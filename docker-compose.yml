@@ -1,5 +1,26 @@
 name: archivero
 
+x-api-env: &api-env
+  NODE_ENV: production
+  PORT: 3001
+  APP_ORIGIN: http://localhost:${ARCHIVERO_WEB_PORT:-8080}
+  DATABASE_URL: postgres://archivero:archivero@postgres:5432/archivero
+  JWT_SECRET: ${DOCKER_JWT_SECRET:-archivero-docker-local-session-secret}
+  SESSION_TTL_HOURS: "8"
+  # Perfil local sobre HTTP; en un despliegue con HTTPS deja el valor por defecto.
+  SESSION_COOKIE_SECURE: "false"
+  S3_ENDPOINT: http://seaweedfs:8333
+  # Las URLs firmadas las abre el navegador: debe ser accesible desde el host.
+  S3_PUBLIC_ENDPOINT: http://localhost:8333
+  S3_REGION: us-east-1
+  S3_BUCKET: archivero
+  S3_ACCESS_KEY_ID: archivero
+  S3_SECRET_ACCESS_KEY: archivero-secret
+  S3_FORCE_PATH_STYLE: "true"
+  MAX_FILE_SIZE_MB: "25"
+  MAINTENANCE_SECRET: ${DOCKER_MAINTENANCE_SECRET:-archivero-docker-maintenance-secret}
+  SEED_FORCE: ${SEED_FORCE:-false}
+
 services:
   postgres:
     image: postgres:17-alpine
@@ -33,6 +54,72 @@ services:
     volumes:
       - archivero-s3:/data
       - ./infra/seaweedfs-s3.json:/etc/seaweedfs/s3.json:ro
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -o /dev/null http://127.0.0.1:8333/"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  init:
+    profiles: ["full"]
+    image: archivero-api:local
+    environment: *api-env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      seaweedfs:
+        condition: service_healthy
+    command:
+      - sh
+      - -c
+      - |
+        bun apps/api/src/db/migrate.ts
+        bun apps/api/scripts/init-storage.ts
+        bun apps/api/seed.ts
+    restart: "no"
+
+  api:
+    profiles: ["full"]
+    image: archivero-api:local
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment: *api-env
+    depends_on:
+      init:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "bun",
+          "-e",
+          "fetch('http://127.0.0.1:3001/api/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  web:
+    profiles: ["full"]
+    image: archivero-web:local
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "${ARCHIVERO_WEB_PORT:-8080}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 volumes:
   archivero-postgres:

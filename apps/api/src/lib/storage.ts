@@ -14,17 +14,26 @@ import { sign, verify } from 'hono/jwt';
 import { env } from '../env';
 import { HttpError } from './http';
 
-const s3 = new S3Client({
-  region: env.S3_REGION,
-  endpoint: env.S3_ENDPOINT || undefined,
-  forcePathStyle: env.S3_FORCE_PATH_STYLE,
-  requestChecksumCalculation: 'WHEN_REQUIRED',
-  responseChecksumValidation: 'WHEN_REQUIRED',
-  credentials: {
-    accessKeyId: env.S3_ACCESS_KEY_ID,
-    secretAccessKey: env.S3_SECRET_ACCESS_KEY,
-  },
-});
+function createS3Client(endpoint: string) {
+  return new S3Client({
+    region: env.S3_REGION,
+    endpoint: endpoint || undefined,
+    forcePathStyle: env.S3_FORCE_PATH_STYLE,
+    requestChecksumCalculation: 'WHEN_REQUIRED',
+    responseChecksumValidation: 'WHEN_REQUIRED',
+    credentials: {
+      accessKeyId: env.S3_ACCESS_KEY_ID,
+      secretAccessKey: env.S3_SECRET_ACCESS_KEY,
+    },
+  });
+}
+
+const s3 = createS3Client(env.S3_ENDPOINT);
+// Las URLs firmadas las usa el navegador, no el contenedor: pueden necesitar otro host.
+const publicS3 =
+  env.S3_PUBLIC_ENDPOINT && env.S3_PUBLIC_ENDPOINT !== env.S3_ENDPOINT
+    ? createS3Client(env.S3_PUBLIC_ENDPOINT)
+    : s3;
 
 export const UPLOAD_URL_TTL_SECONDS = 15 * 60;
 export const DOWNLOAD_URL_TTL_SECONDS = 5 * 60;
@@ -61,7 +70,7 @@ export async function signUploadUrl(key: string, contentType: string) {
     Key: key,
     ContentType: contentType,
   });
-  return getSignedUrl(s3, command, { expiresIn: UPLOAD_URL_TTL_SECONDS });
+  return getSignedUrl(publicS3, command, { expiresIn: UPLOAD_URL_TTL_SECONDS });
 }
 
 export async function signDownloadUrl(key: string, fileName: string) {
@@ -70,7 +79,7 @@ export async function signDownloadUrl(key: string, fileName: string) {
     Key: key,
     ResponseContentDisposition: downloadDisposition(fileName),
   });
-  return getSignedUrl(s3, command, { expiresIn: DOWNLOAD_URL_TTL_SECONDS });
+  return getSignedUrl(publicS3, command, { expiresIn: DOWNLOAD_URL_TTL_SECONDS });
 }
 
 export async function putObject(key: string, body: Uint8Array, contentType: string) {
