@@ -7,10 +7,13 @@
   "workspaces": [
     "apps/*"
   ],
+  "dependencies": {
+    "hono": "^4.13.14"
+  },
   "scripts": {
     "dev": "concurrently -n api,web -c cyan,magenta \"bun run --cwd apps/api dev\" \"bun run --cwd apps/web dev\"",
     "build": "bun run --cwd apps/api build && bun run --cwd apps/web build",
-    "typecheck": "bun run --cwd apps/api typecheck && bun run --cwd apps/web typecheck",
+    "typecheck": "bun run --cwd apps/api typecheck && bun run --cwd apps/web typecheck && tsc -p tsconfig.json --noEmit",
     "lint": "biome check .",
     "format": "biome check --write .",
     "test": "bun run --cwd apps/api test",
@@ -23,6 +26,7 @@
   "devDependencies": {
     "@biomejs/biome": "^2.6.4",
     "@playwright/test": "^1.64.1",
+    "@types/node": "^24.10.1",
     "concurrently": "^9.2.1",
     "typescript": "^5.9.3"
   },

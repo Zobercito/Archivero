@@ -1,0 +1,9 @@
+plan.md
+repomix-output.xml
+apps/api/test
+e2e
+test-results
+playwright-report
+blob-report
+docs/screenshots
+docs/media

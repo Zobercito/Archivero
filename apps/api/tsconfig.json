@@ -12,7 +12,7 @@
   },
   "include": [
     "src/**/*.ts",
-    "tests/**/*.ts",
+    "test/**/*.ts",
     "seed.ts",
     "scripts/**/*.ts",
     "drizzle.config.ts",

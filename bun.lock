@@ -4,9 +4,13 @@
   "workspaces": {
     "": {
       "name": "archivero",
+      "dependencies": {
+        "hono": "^4.13.14",
+      },
       "devDependencies": {
         "@biomejs/biome": "^2.6.4",
         "@playwright/test": "^1.64.1",
+        "@types/node": "^24.10.1",
         "concurrently": "^9.2.1",
         "typescript": "^5.9.3",
       },
