@@ -1,0 +1,195 @@
+@import "tailwindcss";
+
+@theme {
+  --color-paper: #f6f1e7;
+  --color-paper-deep: #ebe0cd;
+  --color-paper-light: #fcf9f3;
+  --color-ink: #1c1917;
+  --color-ink-soft: #5b534a;
+  --color-ink-faint: #8b8174;
+  --color-rule: #d8cbb6;
+  --color-rule-strong: #b9a88d;
+  --color-terracotta: #b4532a;
+  --color-terracotta-dark: #8d3e1e;
+  --color-terracotta-soft: #f2ddd0;
+  --color-moss: #4f5d46;
+  --color-moss-soft: #e0e7d9;
+  --color-danger: #9f2d22;
+  --color-danger-soft: #f4dcd7;
+
+  --font-display: "Fraunces Variable", "Iowan Old Style", Georgia, serif;
+  --font-sans: "Inter Variable", "Helvetica Neue", system-ui, sans-serif;
+
+  --animate-toast-in: toast-in 220ms ease-out both;
+  --animate-fade-up: fade-up 320ms ease-out both;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    min-height: 100vh;
+    background-color: var(--color-paper);
+    background-image:
+      radial-gradient(ellipse at 8% -5%, rgba(180, 83, 42, 0.09), transparent 42%),
+      radial-gradient(ellipse at 100% 110%, rgba(79, 93, 70, 0.08), transparent 46%),
+      repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent 31px,
+        rgba(28, 25, 23, 0.025) 31px,
+        rgba(28, 25, 23, 0.025) 32px
+      );
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background: rgba(180, 83, 42, 0.22);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-terracotta);
+    outline-offset: 3px;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+  }
+}
+
+@layer components {
+  .eyebrow {
+    @apply font-sans text-[0.66rem] font-semibold uppercase tracking-[0.24em] text-terracotta;
+  }
+
+  .display {
+    @apply font-display font-semibold tracking-[-0.025em] text-ink;
+  }
+
+  .paper-panel {
+    @apply border border-rule bg-paper-light/95;
+    box-shadow:
+      0 1px 0 rgba(28, 25, 23, 0.04),
+      0 24px 60px -46px rgba(28, 25, 23, 0.48);
+  }
+
+  .field-label {
+    @apply mb-1.5 block text-[0.7rem] font-semibold uppercase tracking-[0.16em] text-ink-soft;
+  }
+
+  .field-input {
+    @apply w-full rounded-[2px] border border-rule bg-paper-light px-3 py-2.5 text-sm text-ink transition placeholder:text-ink-faint/70;
+  }
+
+  .field-input:focus {
+    border-color: var(--color-terracotta);
+    box-shadow: 0 0 0 3px rgba(180, 83, 42, 0.12);
+    outline: none;
+  }
+
+  .field-input:disabled {
+    @apply cursor-not-allowed bg-paper-deep/60 text-ink-faint;
+  }
+
+  .folder-card {
+    position: relative;
+  }
+
+  .folder-card::before {
+    content: "";
+    position: absolute;
+    top: -7px;
+    left: 18px;
+    width: 82px;
+    height: 8px;
+    border: 1px solid var(--color-rule);
+    border-bottom: 0;
+    border-radius: 3px 3px 0 0;
+    background: var(--color-paper-deep);
+    transition: background-color 160ms ease;
+  }
+
+  .folder-card:hover::before {
+    background: var(--color-terracotta-soft);
+  }
+
+  .ledger-row {
+    transition:
+      background-color 140ms ease,
+      color 140ms ease;
+  }
+
+  .ledger-row:hover {
+    background: rgba(235, 224, 205, 0.42);
+  }
+
+  .stamp {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    border: 2px solid rgba(180, 83, 42, 0.48);
+    border-radius: 2px;
+    padding: 0.35rem 0.7rem;
+    color: var(--color-terracotta);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    transform: rotate(-3deg);
+  }
+
+  .nav-link {
+    @apply flex items-center gap-2.5 rounded-[2px] border border-transparent px-3 py-2 text-sm font-medium text-ink-soft transition;
+  }
+
+  .nav-link:hover {
+    @apply border-rule/80 bg-paper-light/80 text-ink;
+  }
+
+  .nav-link[data-active="true"],
+  .nav-link[aria-current="page"] {
+    @apply border-rule bg-paper-light text-ink shadow-[inset_3px_0_0_var(--color-terracotta)];
+  }
+
+  .thin-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-rule-strong) transparent;
+  }
+}
+
+@layer utilities {
+  .animate-enter {
+    animation: var(--animate-fade-up);
+  }
+}
